@@ -1,89 +1,67 @@
-# Data Science Project Boilerplate
+# 🌊 WATER ANALYSIS TIME SERIES
 
-This boilerplate is designed to kickstart data science projects by providing a basic setup for database connections, data processing, and machine learning model development. It includes a structured folder organization for your datasets and a set of pre-defined Python packages necessary for most data science tasks.
+## 📖 Project Overview
 
-## Structure
+This project aims to analyze the **relationship between precipitation and lake levels** using **time-series forecasting**. We leveraged **historical hydrological and meteorological data** to develop predictive models for **lake level variations** over time.
 
-The project is organized as follows:
+### 🔍 **Main Objectives**
+✅ Understand how **rainfall impacts lake levels**.  
+✅ Identify **seasonal patterns and trends** in water levels.  
+✅ Develop predictive models to **forecast lake levels 90 days ahead**.  
 
-- `app.py` - The main Python script that you run for your project.
-- `explore.py` - A notebook to explore data, play around, visualize, clean, etc. Ideally the notebook code should be migrated to the app.py when moving to production.
-- `utils.py` - This file contains utility code for operations like database connections.
-- `requirements.txt` - This file contains the list of necessary python packages.
-- `models/` - This directory should contain your SQLAlchemy model classes.
-- `data/` - This directory contains the following subdirectories:
-  - `interin/` - For intermediate data that has been transformed.
-  - `processed/` - For the final data to be used for modeling.
-  - `raw/` - For raw data without any processing.
- 
-    
-## Setup
+---
 
-**Prerequisites**
+## 📊 **Dataset & Preprocessing**
 
-Make sure you have Python 3.11+ installed on your. You will also need pip for installing the Python packages.
+The dataset used comes from **Kaggle's Acea Water Prediction competition**, specifically the **Lake Bilancino dataset**. The key features analyzed include:
 
-**Installation**
+- **Precipitation Data**: Rainfall from multiple stations (San Piero, Mangona, S. Agata, Cavallina, Le Croci).
+- **Temperature Data**: Recorded at Le Croci.
+- **Lake Level Data**: The dependent variable (target) to predict.
+- **Flow Rate Data**: Measures water discharge from the lake.
 
-Clone the project repository to your local machine.
+### ⚙️ **Data Cleaning & Feature Engineering**
+✔ **Handled missing values** with forward-fill (`ffill`) and backward-fill (`bfill`).  
+✔ **Detected and treated outliers** using IQR-based capping.  
+✔ **Checked for stationarity** (ADF Test) and applied transformations where needed.  
+✔ **Created lagged features** and **rolling averages** to enhance model performance.  
 
-Navigate to the project directory and install the required Python packages:
+---
 
-```bash
-pip install -r requirements.txt
-```
+## 📈 **Models Used for Forecasting**
+We implemented and compared **three forecasting models**:
 
-**Create a database (if needed)**
+| Model        | Strengths | Weaknesses |
+|-------------|-----------|------------|
+| **SARIMA**  | Captures trend & seasonality well | Computationally expensive for long-term forecasts |
+| **Prophet** | Handles missing data & seasonal trends well | Less accurate in short-term predictions |
+| **XGBoost** | Best for complex non-linear relationships | Requires extensive feature engineering |
 
-Create a new database within the Postgres engine by customizing and executing the following command: `$ createdb -h localhost -U <username> <db_name>`
-Connect to the Postgres engine to use your database, manipulate tables and data: `$ psql -h localhost -U <username> <db_name>`
-NOTE: Remember to check the ./.env file information to get the username and db_name.
+**🏆 Final Model Selected: `XGBoost`**  
+- It provided the **best accuracy** while maintaining computational efficiency.  
+- Predicts **lake levels 90 days ahead** with optimized hyperparameters.  
 
-Once you are inside PSQL you will be able to create tables, make queries, insert, update or delete data and much more!
+---
 
-**Environment Variables**
+## 📊 **Results & Findings**
+✅ **Significant correlation** found between rainfall and lake level variations.  
+✅ **Seasonality detected**, showing cyclic patterns in water levels.  
+✅ **Lag effects confirmed**, with rainfall impacting lake levels **days later**.  
+✅ **XGBoost provided the most stable predictions**, capturing **non-linear dependencies**.  
 
-Create a .env file in the project root directory to store your environment variables, such as your database connection string:
+### 📉 **Final Forecast (90 Days Ahead)**
+We predicted **lake levels for the next 90 days** using XGBoost, visualized alongside historical trends. The final forecast showed **reasonable fluctuations**, closely following seasonal behavior.
 
-```makefile
-DATABASE_URL="your_database_connection_url_here"
-```
+---
 
-## Running the Application
+## ❗ **Why the Model & ZIP File Were Not Uploaded**
+The trained XGBoost model (`xgboost_model.pkl`) and any large ZIP files were **not uploaded** due to **GitHub storage limitations**:
 
-To run the application, execute the app.py script from the root of the project directory:
+- **GitHub has a 100MB file size limit**, and model files can be large.
+- Instead, we saved the model **locally** (`XGboost_Model/`) and added it to `.gitignore`.
+- Users can **retrain the model** using the provided training script.
 
-```bash
-python app.py
-```
-
-## Adding Models
-
-To add SQLAlchemy model classes, create new Python script files inside the models/ directory. These classes should be defined according to your database schema.
-
-Example model definition (`models/example_model.py`):
-
-```py
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy import Column, Integer, String
-
-Base = declarative_base()
-
-class ExampleModel(Base):
-    __tablename__ = 'example_table'
-    id = Column(Integer, primary_key=True)
-    name = Column(String)
-
-```
-
-## Working with Data
-
-You can place your raw datasets in the data/raw directory, intermediate datasets in data/interim, and the processed datasets ready for analysis in data/processed.
-
-To process data, you can modify the app.py script to include your data processing steps, utilizing pandas for data manipulation and analysis.
-
-## Contributors
-
-This template was built as part of the 4Geeks Academy [Data Science and Machine Learning Bootcamp](https://4geeksacademy.com/us/coding-bootcamps/datascience-machine-learning) by [Alejandro Sanchez](https://twitter.com/alesanchezr) and many other contributors. Find out more about [4Geeks Academy's BootCamp programs](https://4geeksacademy.com/us/programs) here.
-
-Other templates and resources like this can be found on the school GitHub page.
+🔹 **To reload the model:**  
+```python
+import joblib
+model = joblib.load("XGboost_Model/xgboost_model.pkl")
